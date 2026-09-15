@@ -1,0 +1,12 @@
+{
+  "chamados": [
+    {
+      "id": 1,
+      "titulo": "Tela quebrada",
+      "descricao": "tela trincada",
+      "categoria": "hardware",
+      "prioridade": "alta",
+      "status": "aberto"
+    }
+  ]
+}
