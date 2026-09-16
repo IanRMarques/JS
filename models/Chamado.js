@@ -5,7 +5,7 @@ const REGRAS_TRANSICAO = {
     "em andamento": ["concluido"],
     "concluido": []
 }
-export class Chamado{
+export class Chamado{ 
     #status
     //confere se o status é válido
     static statusValido(novoStatus){
