@@ -1,3 +1,14 @@
 {
-  "chamados": []
+  "chamados": [
+    {
+      "id": 1,
+      "titulo": "teclado",
+      "descricao": ".",
+      "categoria": "hardware",
+      "prioridade": "baixa",
+      "status": "concluido",
+      "criadoEm": "2026-09-16T16:05:11.618Z",
+      "resolvidoEm": "2026-09-16T16:05:13.740Z"
+    }
+  ]
 }

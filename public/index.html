@@ -256,6 +256,17 @@ async function pedir(url, opcoes) {
   return corpo;
 }
 
+function formatarTempo(horas) {
+  if (horas === null || horas === undefined) return "—";
+  if (horas < 1) {
+    const minutos = horas * 60;
+    if (minutos < 1) return `${Math.round(minutos * 60)}s`;
+    return `${minutos.toFixed(1)}min`;
+  }
+  if (horas < 24) return `${horas.toFixed(1)}h`;
+  return `${(horas / 24).toFixed(1)}d`;
+}
+
 async function carregarPainel() {
   const painel = $("painel");
   try {
@@ -278,11 +289,16 @@ async function carregarPainel() {
     const porCategoria =
       `<div class="celula"><span class="n">${total}</span><span class="r">${detalhe}</span></div>`;
 
-    painel.innerHTML = porStatus + porCategoria;
+   const tempo = formatarTempo(dados.tempoMedioHoras);
+    const tempoMedio =
+      `<div class="celula"><span class="n">${tempo}</span><span class="r">tempo médio de resolução</span></div>`;
+
+    painel.innerHTML = porStatus + porCategoria + tempoMedio;
   } catch (erro) {
     painel.innerHTML = `<div class="vazio">${erro.message}</div>`;
   }
 }
+  
 
 async function carregarFila() {
   const fila = $("fila");
