@@ -79,8 +79,8 @@ O front-end respeita a mesma regra: um chamado concluído não exibe botão de a
 **Pré-requisitos:** Node.js 18 ou superior.
 
 ```bash
-git clone https://github.com/IanRMarques/JS.git
-cd JS
+git clone https://github.com/IanRMarques/service-desk-api.git
+cd service-desk-api
 npm install
 npm start
 ```
