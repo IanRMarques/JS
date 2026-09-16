@@ -1,11 +1,18 @@
 import { db } from "./db.js";
 import { ChamadoRepository } from "./repositories/ChamadoRepository.js";
-import { Chamado } from "./models/Chamado.js";
+import { ChamadoService } from "./services/ChamadoService.js";
 
 const repo = new ChamadoRepository(db);
+const service = new ChamadoService(repo);
 
-const chamado = new Chamado(1, "Tela quebrada", "tela trincada", "hardware", "alta");
-await repo.salvar(chamado);
+const c = await service.criarChamado("Tela quebrada", "tela trincada", "hardware", "alta");
+console.log(c);
 
-const todos = await repo.listarTodos();
-console.log(todos);
+await service.atualizarStatus(c.id, "em andamento");
+console.log(await service.dashboard());
+
+try {
+  await service.atualizarStatus(c.id, "aberto");
+} catch (erro) {
+  console.log("Bloqueado:", erro.message);
+}
