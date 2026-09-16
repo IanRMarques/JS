@@ -17,6 +17,9 @@ export class Chamado{
             throw new Error(`Transição de status inválida: ${this.#status} para ${novoStatus}`)
         }
         this.#status = novoStatus;
+        if(novoStatus === "concluido"){
+            this.resolvidoEm = new Date();
+        }
     }
 
     constructor(id, titulo, descricao, categoria, prioridade){
@@ -26,7 +29,10 @@ export class Chamado{
         this.categoria = categoria;
         this.prioridade = prioridade;
         this.#status = 'aberto'
+        this.criadoEm = new Date();
+        this.resolvidoEm = null;
     }
+
     //retorna o status atual do chamado pelo get, sem permitir a alteração direta do status
     get status(){
         return this.#status
@@ -39,13 +45,17 @@ export class Chamado{
             descricao: this.descricao,
             categoria: this.categoria,
             prioridade: this.prioridade,
-            status: this.#status
+            status: this.#status,
+            criadoEm: this.criadoEm,
+            resolvidoEm: this.resolvidoEm
         } 
     }
     //reconstrói o objeto Chamado a partir de um JSON, incluindo o status privado
     static fromJSON(json){
         const chamado = new Chamado(json.id, json.titulo, json.descricao, json.categoria, json.prioridade);
         chamado.#status = json.status;
+        chamado.criadoEm = new Date(json.criadoEm);
+        chamado.resolvidoEm = json.resolvidoEm ? new Date(json.resolvidoEm): null;
         return chamado;
     }
 }

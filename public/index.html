@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bancada — chamados de assistência técnica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#EEF1F4;
+    --surface:#FFFFFF;
+    --ink:#1B2A38;
+    --muted:#5C6E7E;
+    --line:#D3DAE1;
+    --aberto:#2B5F9E;
+    --andamento:#C8860D;
+    --concluido:#2E7D5B;
+    --alerta:#A33A2A;
+  }
+
+  *{box-sizing:border-box;}
+
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:15px;
+    line-height:1.5;
+  }
+
+  .wrap{max-width:1140px;margin:0 auto;padding:32px 24px 64px;}
+
+  header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    padding-bottom:16px;
+    border-bottom:2px solid var(--ink);
+  }
+  header h1{font-size:23px;font-weight:600;margin:0;letter-spacing:-.01em;}
+  header p{margin:0;color:var(--muted);font-size:14px;}
+
+  /* painel de contagens */
+  .painel{
+    display:flex;
+    flex-wrap:wrap;
+    gap:0;
+    border:1px solid var(--line);
+    border-top:none;
+    background:var(--surface);
+  }
+  .painel .celula{
+    flex:1 1 140px;
+    padding:14px 18px;
+    border-right:1px solid var(--line);
+    border-top:3px solid transparent;
+  }
+  .painel .celula:last-child{border-right:none;}
+  .celula .n{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:28px;
+    font-weight:500;
+    display:block;
+    line-height:1.1;
+  }
+  .celula .r{color:var(--muted);font-size:13px;}
+  .celula[data-k="aberto"]{border-top-color:var(--aberto);}
+  .celula[data-k="em andamento"]{border-top-color:var(--andamento);}
+  .celula[data-k="concluido"]{border-top-color:var(--concluido);}
+  .painel .vazio{padding:14px 18px;color:var(--muted);font-size:14px;}
+
+  .colunas{display:grid;grid-template-columns:320px 1fr;gap:28px;margin-top:28px;align-items:start;}
+  @media (max-width:860px){.colunas{grid-template-columns:1fr;}}
+
+  .bloco{background:var(--surface);border:1px solid var(--line);padding:20px;}
+  .bloco h2{font-size:15px;font-weight:600;margin:0 0 16px;}
+
+  label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px;}
+  input,select,textarea{
+    width:100%;
+    font:inherit;
+    color:var(--ink);
+    background:var(--paper);
+    border:1px solid var(--line);
+    padding:8px 10px;
+    margin-bottom:14px;
+  }
+  textarea{resize:vertical;min-height:70px;}
+  input:focus,select:focus,textarea:focus,button:focus-visible{
+    outline:2px solid var(--aberto);
+    outline-offset:1px;
+  }
+
+  button{
+    font:inherit;
+    cursor:pointer;
+    border:1px solid var(--ink);
+    background:var(--ink);
+    color:var(--surface);
+    padding:9px 16px;
+    font-weight:500;
+  }
+  button:hover{background:#0F1C27;}
+  button.leve{
+    background:transparent;
+    color:var(--ink);
+    border-color:var(--line);
+    padding:5px 11px;
+    font-size:13px;
+  }
+  button.leve:hover{background:var(--paper);border-color:var(--muted);}
+  button.perigo{color:var(--alerta);border-color:var(--line);background:transparent;padding:5px 11px;font-size:13px;}
+  button.perigo:hover{background:#FBEFED;border-color:var(--alerta);}
+
+  .filtros{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:18px;}
+  .filtros>div{flex:1 1 150px;}
+  .filtros input,.filtros select{margin-bottom:0;}
+
+  /* fila */
+  .chamado{
+    border:1px solid var(--line);
+    border-left:4px solid var(--muted);
+    background:var(--surface);
+    padding:14px 16px;
+    margin-bottom:10px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:12px;
+    align-items:start;
+  }
+  .chamado[data-s="aberto"]{border-left-color:var(--aberto);}
+  .chamado[data-s="em andamento"]{border-left-color:var(--andamento);}
+  .chamado[data-s="concluido"]{border-left-color:var(--concluido);}
+
+  .chamado .id{
+    font-family:"IBM Plex Mono",monospace;
+    color:var(--muted);
+    font-size:13px;
+    margin-right:8px;
+  }
+  .chamado h3{display:inline;font-size:15px;font-weight:600;margin:0;}
+  .chamado .desc{margin:5px 0 8px;color:var(--muted);font-size:14px;}
+  .meta{font-size:13px;color:var(--muted);}
+  .meta b{font-weight:500;color:var(--ink);}
+  .acoes{display:flex;flex-direction:column;gap:6px;align-items:stretch;}
+  @media (max-width:560px){
+    .chamado{grid-template-columns:1fr;}
+    .acoes{flex-direction:row;flex-wrap:wrap;}
+  }
+
+  .aviso{padding:10px 14px;margin-bottom:14px;font-size:14px;border-left:3px solid var(--alerta);background:#FBEFED;}
+  .aviso.ok{border-left-color:var(--concluido);background:#EDF5F1;}
+  .aviso:empty{display:none;}
+  .nada{color:var(--muted);padding:22px 0;font-size:14px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Bancada</h1>
+    <p>Chamados de assistência técnica</p>
+  </header>
+
+  <div class="painel" id="painel"></div>
+
+  <div class="colunas">
+
+    <section class="bloco">
+      <h2>Abrir chamado</h2>
+      <div class="aviso" id="avisoForm"></div>
+
+      <label for="titulo">Título</label>
+      <input id="titulo" placeholder="Teclado não responde">
+
+      <label for="descricao">Descrição</label>
+      <textarea id="descricao" placeholder="Metade das teclas parou depois de um derramamento"></textarea>
+
+      <label for="categoria">Categoria</label>
+      <select id="categoria">
+        <option value="hardware">hardware</option>
+        <option value="software">software</option>
+        <option value="rede">rede</option>
+      </select>
+
+      <label for="prioridade">Prioridade</label>
+      <select id="prioridade">
+        <option value="baixa">baixa</option>
+        <option value="media">media</option>
+        <option value="alta">alta</option>
+      </select>
+
+      <button id="btnCriar">Abrir chamado</button>
+    </section>
+
+    <section>
+      <div class="filtros">
+        <div>
+          <label for="fStatus">Status</label>
+          <select id="fStatus">
+            <option value="">todos</option>
+            <option value="aberto">aberto</option>
+            <option value="em andamento">em andamento</option>
+            <option value="concluido">concluido</option>
+          </select>
+        </div>
+        <div>
+          <label for="fCategoria">Categoria</label>
+          <select id="fCategoria">
+            <option value="">todas</option>
+            <option value="hardware">hardware</option>
+            <option value="software">software</option>
+            <option value="rede">rede</option>
+          </select>
+        </div>
+        <div>
+          <label for="fBusca">Buscar no texto</label>
+          <input id="fBusca" placeholder="teclado">
+        </div>
+        <button class="leve" id="btnLimpar">Limpar</button>
+      </div>
+
+      <div class="aviso" id="avisoFila"></div>
+      <div id="fila"></div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+const API = "/api";
+const $ = (id) => document.getElementById(id);
+
+const PROXIMO = {
+  "aberto": "em andamento",
+  "em andamento": "concluido",
+  "concluido": null
+};
+
+function aviso(el, texto, ok) {
+  el.textContent = texto || "";
+  el.className = "aviso" + (ok ? " ok" : "");
+  if (texto) setTimeout(() => { el.textContent = ""; }, 4000);
+}
+
+async function pedir(url, opcoes) {
+  const resposta = await fetch(url, opcoes);
+  if (resposta.status === 204) return null;
+  const corpo = await resposta.json().catch(() => null);
+  if (!resposta.ok) throw new Error((corpo && corpo.erro) || "Falha na requisição");
+  return corpo;
+}
+
+async function carregarPainel() {
+  const painel = $("painel");
+  try {
+    const dados = await pedir(`${API}/dashboard`);
+    const status = dados.porStatus || {};
+    const categorias = dados.porCategoria || {};
+    const chaves = Object.keys(status);
+
+    if (!chaves.length) {
+      painel.innerHTML = '<div class="vazio">Nenhum chamado registrado ainda.</div>';
+      return;
+    }
+
+    const porStatus = chaves.map((k) =>
+      `<div class="celula" data-k="${k}"><span class="n">${status[k]}</span><span class="r">${k}</span></div>`
+    ).join("");
+
+    const total = Object.values(categorias).reduce((a, b) => a + b, 0);
+    const detalhe = Object.entries(categorias).map(([k, v]) => `${k} ${v}`).join(", ");
+    const porCategoria =
+      `<div class="celula"><span class="n">${total}</span><span class="r">${detalhe}</span></div>`;
+
+    painel.innerHTML = porStatus + porCategoria;
+  } catch (erro) {
+    painel.innerHTML = `<div class="vazio">${erro.message}</div>`;
+  }
+}
+
+async function carregarFila() {
+  const fila = $("fila");
+  const termo = $("fBusca").value.trim();
+
+  try {
+    let chamados;
+    if (termo) {
+      chamados = await pedir(`${API}/chamados/busca?q=${encodeURIComponent(termo)}`);
+      const s = $("fStatus").value;
+      const c = $("fCategoria").value;
+      if (s) chamados = chamados.filter((x) => x.status === s);
+      if (c) chamados = chamados.filter((x) => x.categoria === c);
+    } else {
+      const params = new URLSearchParams();
+      if ($("fStatus").value) params.set("status", $("fStatus").value);
+      if ($("fCategoria").value) params.set("categoria", $("fCategoria").value);
+      const query = params.toString();
+      chamados = await pedir(`${API}/chamados${query ? "?" + query : ""}`);
+    }
+
+    if (!chamados.length) {
+      fila.innerHTML = '<p class="nada">Nada na fila com esses critérios.</p>';
+      return;
+    }
+
+    fila.innerHTML = chamados.map((c) => {
+      const proximo = PROXIMO[c.status];
+      const avancar = proximo
+        ? `<button class="leve" data-acao="avancar" data-id="${c.id}" data-destino="${proximo}">Marcar ${proximo}</button>`
+        : "";
+      return `
+        <article class="chamado" data-s="${c.status}">
+          <div>
+            <span class="id">#${c.id}</span><h3>${c.titulo}</h3>
+            <p class="desc">${c.descricao}</p>
+            <p class="meta"><b>${c.status}</b> · ${c.categoria} · prioridade ${c.prioridade}</p>
+          </div>
+          <div class="acoes">
+            ${avancar}
+            <button class="perigo" data-acao="remover" data-id="${c.id}">Remover</button>
+          </div>
+        </article>`;
+    }).join("");
+  } catch (erro) {
+    fila.innerHTML = `<p class="nada">${erro.message}</p>`;
+  }
+}
+
+async function atualizar() {
+  await Promise.all([carregarPainel(), carregarFila()]);
+}
+
+$("btnCriar").addEventListener("click", async () => {
+  const titulo = $("titulo").value.trim();
+  const descricao = $("descricao").value.trim();
+
+  if (!titulo || !descricao) {
+    aviso($("avisoForm"), "Preencha título e descrição.");
+    return;
+  }
+
+  try {
+    await pedir(`${API}/chamados`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        titulo,
+        descricao,
+        categoria: $("categoria").value,
+        prioridade: $("prioridade").value
+      })
+    });
+    $("titulo").value = "";
+    $("descricao").value = "";
+    aviso($("avisoForm"), "Chamado aberto.", true);
+    atualizar();
+  } catch (erro) {
+    aviso($("avisoForm"), erro.message);
+  }
+});
+
+$("fila").addEventListener("click", async (evento) => {
+  const botao = evento.target.closest("button[data-acao]");
+  if (!botao) return;
+
+  const id = botao.dataset.id;
+
+  try {
+    if (botao.dataset.acao === "avancar") {
+      await pedir(`${API}/chamados/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: botao.dataset.destino })
+      });
+      aviso($("avisoFila"), `Chamado #${id} agora está ${botao.dataset.destino}.`, true);
+    } else {
+      await pedir(`${API}/chamados/${id}`, { method: "DELETE" });
+      aviso($("avisoFila"), `Chamado #${id} removido.`, true);
+    }
+    atualizar();
+  } catch (erro) {
+    aviso($("avisoFila"), erro.message);
+  }
+});
+
+$("fStatus").addEventListener("change", carregarFila);
+$("fCategoria").addEventListener("change", carregarFila);
+
+let debounce;
+$("fBusca").addEventListener("input", () => {
+  clearTimeout(debounce);
+  debounce = setTimeout(carregarFila, 250);
+});
+
+$("btnLimpar").addEventListener("click", () => {
+  $("fStatus").value = "";
+  $("fCategoria").value = "";
+  $("fBusca").value = "";
+  carregarFila();
+});
+
+atualizar();
+</script>
+</body>
+</html> 

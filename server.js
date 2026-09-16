@@ -5,6 +5,7 @@
 
     const app = express ();
     app.use (express.json());
+     app.use(express.static("public"));
 
     const repo = new ChamadoRepository(db);
     const service = new ChamadoService(repo);
@@ -51,4 +52,4 @@
         res.status(200).json(dados);
     })
 
-    app.listen(3000, () => console.log("Servidor rodando na porta 3000"));
+   app.listen(3000, () => console.log("Servidor rodando em http://localhost:3000"));

@@ -80,5 +80,6 @@
         return acumulador;
       },{});
       return { porStatus: contagem, porCategoria: contagemCategoria};
+      
     }
   }
